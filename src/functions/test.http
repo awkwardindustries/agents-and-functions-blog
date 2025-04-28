@@ -1,0 +1,9 @@
+@host=http://localhost:7071
+
+### Ask the Agent about projects to trigger the Function calls
+POST  {{host}}/api/CreateAgentAndRun
+Content-Type: application/json
+
+{
+    "Prompt": "What is the status of our current projects?"
+}
