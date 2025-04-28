@@ -3,9 +3,8 @@ param location string = resourceGroup().location
 param tags object = {}
 
 param allowBlobPublicAccess bool = false
-@allowed(['Enabled', 'Disabled'])
-param publicNetworkAccess string = 'Enabled'
 param containers array = []
+param queueNamesToCreate array = []
 param kind string = 'StorageV2'
 param minimumTlsVersion string = 'TLS1_2'
 param sku object = { name: 'Standard_LRS' }
@@ -14,7 +13,7 @@ param networkAcls object = {
   defaultAction: 'Allow'
 }
 
-resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: name
   location: location
   tags: tags
@@ -22,8 +21,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   sku: sku
   properties: {
     minimumTlsVersion: minimumTlsVersion
-    allowBlobPublicAccess: allowBlobPublicAccess
-    publicNetworkAccess: publicNetworkAccess
+    allowBlobPublicAccess: allowBlobPublicAccess    
     allowSharedKeyAccess: false
     networkAcls: networkAcls
   }
@@ -37,7 +35,15 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' = {
       }
     }]
   }
+
+  resource queueServices 'queueServices' = {
+    name: 'default'
+    resource queue 'queues' = [for queueName in queueNamesToCreate: {
+      name: queueName
+    }]
+  }
 }
 
 output name string = storage.name
 output primaryEndpoints object = storage.properties.primaryEndpoints
+output id string = storage.id

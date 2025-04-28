@@ -28,7 +28,10 @@ module api '../core/host/functions-flexconsumption.bicep' = {
     appSettings: union(appSettings,
       {
         AzureWebJobsStorage__clientId : identityClientId
+        STORAGE_QUEUES_CONNECTION__clientId : identityClientId
+        STORAGE_QUEUES_CONNECTION__credential: 'managedidentity'
         APPLICATIONINSIGHTS_AUTHENTICATION_STRING: applicationInsightsIdentity
+        AZURE_CLIENT_ID: identityClientId
       })
     applicationInsightsName: applicationInsightsName
     appServicePlanId: appServicePlanId
@@ -43,4 +46,5 @@ module api '../core/host/functions-flexconsumption.bicep' = {
 }
 
 output SERVICE_API_NAME string = api.outputs.name
+output SERVICE_API_URI string = api.outputs.uri
 output SERVICE_API_IDENTITY_PRINCIPAL_ID string = api.outputs.identityPrincipalId

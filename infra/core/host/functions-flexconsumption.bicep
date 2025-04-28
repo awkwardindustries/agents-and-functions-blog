@@ -64,14 +64,16 @@ resource functions 'Microsoft.Web/sites@2023-12-01' = {
         version: runtimeVersion
       }
     }
-    virtualNetworkSubnetId:!empty(virtualNetworkSubnetId) ? virtualNetworkSubnetId : null
+    virtualNetworkSubnetId: !empty(virtualNetworkSubnetId) ? virtualNetworkSubnetId : null
   }
 
   resource configAppSettings 'config' = {
     name: 'appsettings'
     properties: union(appSettings,
       {
-        AzureWebJobsStorage__accountName: stg.name
+        AzureWebJobsStorage__blobServiceUri: stg.properties.primaryEndpoints.blob
+        AzureWebJobsStorage__queueServiceUri: stg.properties.primaryEndpoints.queue
+        AzureWebJobsStorage__tableServiceUri: stg.properties.primaryEndpoints.table
         AzureWebJobsStorage__credential : 'managedidentity'
         APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
       })

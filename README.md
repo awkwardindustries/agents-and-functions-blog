@@ -2,6 +2,8 @@
 
 An end-to-end sample showing an Azure AI Agent Service invoking Azure Functions. This example repository was used in support of the Awkward Industries blog (<https://blog.awkward.industries>) for the post [***Empower Your AI Agents: Harnessing Azure Functions with Azure AI Foundry***]().
 
+For provisioning the Azure resources and deploying the application code, this project leveraged the sample from the documentation as an `azd` starter: <https://github.com/Azure-Samples/azure-functions-ai-services-agent-python>.
+
 ## Run Functions Locally
 
 0. Prerequisites:
@@ -34,3 +36,5 @@ An end-to-end sample showing an Azure AI Agent Service invoking Azure Functions.
 0. Prerequisites:
    1. Install the [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?tabs=winget-windows%2Cbrew-mac%2Cscript-linux&pivots=os-linux)
 1. Run `azd up`
+
+> IMPORTANT! This end-to-end example uses a single storage account for hosting the Function App state *and* the Queues for request/response between the AI Agent service and Azure Functions. They do not have to be the same account, but to keep the deployment simple are consolidated for this example.
