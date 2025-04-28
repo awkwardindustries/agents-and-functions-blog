@@ -2,3 +2,4 @@
 # Azurite for local dev
 __azurite_db_*__.json
 __*__/
+.azure
