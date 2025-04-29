@@ -55,9 +55,7 @@ def list_projects(
     correlation_id = message_payload["CorrelationId"]
 
     result = {
-        "Value": {
-            "Projects": PROJECTS,
-        },
+        "Value": f"Projects: {', '.join(PROJECTS)}",
         "CorrelationId": correlation_id,
     }
 
@@ -111,10 +109,7 @@ def get_project_status(
         current_status = "Unrecognized Project"
 
     result = {
-        "Value": {
-            "Project": project_name,
-            "Status": current_status,
-        },
+        "Value": f"Project {project_name}'s current status is: {current_status}",
         "CorrelationId": correlation_id,
     }
 
@@ -126,6 +121,7 @@ def get_project_status(
     logging.info("Function get_project_status exiting.")
 
 
+@app.function_name(name="CreateAgentAndRun")
 @app.route(route="CreateAgentAndRun", auth_level=func.AuthLevel.FUNCTION)
 def create_agent_and_run(req: func.HttpRequest) -> func.HttpResponse:
     """
@@ -165,11 +161,13 @@ def create_agent_and_run(req: func.HttpRequest) -> func.HttpResponse:
 
     logging.info("Creating an agent with Azure Function tools...")
     instructions = """
-        You are a helpful agent who answers questions about projects for 
-        the Widgets and Things Company. Answer the user's questions to
-        the best of your ability. Do not make up answers without having
-        data to support your answer.
-        """
+You are a helpful agent who answers questions about projects for the Widgets
+and Things Company. Attempt to resolve the user's task without asking them
+for any additional information.
+If they're asking about project status but not for a specific project, get
+all of the projects and provide the current status for each one.
+Do not make up answers without having data to support your answer.
+"""
     agent = project_client.agents.create_agent(
         headers={"x-ms-enable-preview": "true"},
         model=model_deployment_name,
@@ -214,7 +212,7 @@ def create_agent_and_run(req: func.HttpRequest) -> func.HttpResponse:
                 "azure_function": {
                     "function": {
                         "name": "ListProjects",
-                        "description": "Retrieves the current list of projects."
+                        "description": "Retrieves the list of projects."
                     },
                     "input_binding": {
                         "type": "storage_queue",
