@@ -3,3 +3,4 @@
 __azurite_db_*__.json
 __*__/
 .azure
+AzuriteConfig

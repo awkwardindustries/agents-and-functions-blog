@@ -62,11 +62,11 @@ def list_projects(
     }
 
     # Message formatted for a Storage Queue -- string with UTF-8 encoding
-    result_message = json.dumps(result_message).encode(STORAGE_QUEUE_MESSAGE_ENCODING)
+    result_message = json.dumps(result).encode(STORAGE_QUEUE_MESSAGE_ENCODING)
     response.set(result_message)
     logging.info(f"Sending response to queue: {LIST_OUTPUT_QUEUE_NAME}. Message: {result}")
     
-    logging.info(f"Function list_projects exiting.")
+    logging.info("Function list_projects exiting.")
 
 
 @app.function_name(name="GetProjectStatus")
@@ -119,11 +119,11 @@ def get_project_status(
     }
 
     # Message formatted for a Storage Queue -- string with UTF-8 encoding
-    result_message = json.dumps(result_message).encode(STORAGE_QUEUE_MESSAGE_ENCODING)
+    result_message = json.dumps(result).encode(STORAGE_QUEUE_MESSAGE_ENCODING)
     response.set(result_message)
     logging.info(f"Sending response to queue: {STATUS_OUTPUT_QUEUE_NAME}. Message: {result}")
     
-    logging.info(f"Function get_project_status exiting.")
+    logging.info("Function get_project_status exiting.")
 
 
 @app.route(route="CreateAgentAndRun", auth_level=func.AuthLevel.FUNCTION)
@@ -143,7 +143,7 @@ def create_agent_and_run(req: func.HttpRequest) -> func.HttpResponse:
     creation, run, and cleanup of the Agent and a JSON body including
     the last message from the Agent
     """
-    logging.info(f"Function create_agent_and_run triggered.")
+    logging.info( "Function create_agent_and_run triggered.")
 
     logging.info("Checking required input and configuration...")
     project_connection_string = os.environ["AZURE_AI_PROJECT_CONNECTION_STRING"]
@@ -164,32 +164,33 @@ def create_agent_and_run(req: func.HttpRequest) -> func.HttpResponse:
     )
 
     logging.info("Creating an agent with Azure Function tools...")
+    instructions = """
+        You are a helpful agent who answers questions about projects for 
+        the Widgets and Things Company. Answer the user's questions to
+        the best of your ability. Do not make up answers without having
+        data to support your answer.
+        """
     agent = project_client.agents.create_agent(
         headers={"x-ms-enable-preview": "true"},
         model=model_deployment_name,
         name="function-created-agent-project-manager",
-        instructions="""
-            You are a helpful agent who answers questions about projects for
-            the Widgets and Things Company. Answer the user's questions to
-            the best of your ability. Do not make up answers without having
-            data to support your answer.
-            """,
+        instructions=instructions,
         tools=[
             {
                 "type": "azure_function",
                 "azure_function": {
                     "function": {
                         "name": "GetProjectStatus",
-                        "description": "Retrieves the current status of the project.",
+                        "description": "Retrieves the current status of the specified project.",
                         "parameters": {
                             "type": "object",
                             "properties": {
                                 "Project": {
                                     "type": "string", 
                                     "description": ""
-                                },
-                                "required": ["Project"]
-                            }
+                                }
+                            },
+                            "required": ["Project"]
                         }
                     },
                     "input_binding": {
@@ -264,7 +265,14 @@ def create_agent_and_run(req: func.HttpRequest) -> func.HttpResponse:
     project_client.agents.delete_agent(agent_id=agent.id)
     logging.info("Agent deleted.")
 
+    conversation=[]
+    for m in reversed(run_messages.data):
+        msg_str = ""
+        if m.content:
+            msg_str = m.content[-1].text.value if len(m.content) > 0 else ""
+        conversation.append(f"{m.role.upper()}: {msg_str}")
+    
     return func.HttpResponse(
-        body=json.dumps(run_messages.data),
+        body=json.dumps({"run_messages": conversation}),
         mimetype="application/json",
         status_code=200)

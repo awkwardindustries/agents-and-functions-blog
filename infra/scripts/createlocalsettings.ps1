@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-if (-not (Test-Path ".\app\local.settings.json")) {
+if (-not (Test-Path ".\src\functions\local.settings.json")) {
 
     $output = azd env get-values
 
@@ -22,5 +22,5 @@ if (-not (Test-Path ".\app\local.settings.json")) {
             "AZURE_AI_PROJECT_CONNECTION_STRING" = "$AIProjectConnectionString";
             "STORAGE_QUEUES_CONNECTION__queueServiceUri" = "$StorageConnectionQueue";
         }
-    } | ConvertTo-Json | Out-File -FilePath ".\app\local.settings.json" -Encoding ascii
+    } | ConvertTo-Json | Out-File -FilePath ".\src\functions\local.settings.json" -Encoding ascii
 }

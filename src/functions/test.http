@@ -5,5 +5,5 @@ POST  {{host}}/api/CreateAgentAndRun
 Content-Type: application/json
 
 {
-    "Prompt": "What is the status of our current projects?"
+    "Prompt": "What is the status of all of our current projects?"
 }
